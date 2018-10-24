@@ -113,8 +113,11 @@ INTO [Deployment0]
                    [AppState].[StatusType],
                    NULL AS [ErrorCode],
                    [AppState].[EnforcementState],
-                   [AppState].[IsMachineChangesPersisted]
+                   [AppState].[IsMachineChangesPersisted],
+                   (N'CH_ClientState'+CAST([cs].[ClientState] AS NCHAR(1))) AS [ClientStateDescription]
                    FROM [fn_rbac_AppDeploymentAssetDetails]([dbo].[fn_LShortNameToLCID](@locale), @UserSIDs) [AppState]
+                        LEFT OUTER JOIN [cm_vit].[dbo].[v_CH_ClientSummary] [cs] ON [AppState].[MachineID] = [cs].
+                        [ResourceID]
                    WHERE([AppState].[PolicyModelID] = @PolicyModelID)
                         AND ([AppState].[AssignmentID] = @AssignmentID)
                         AND ([AppState].[StatusType] = [AppState].[AppStatusType])
@@ -125,9 +128,12 @@ INTO [Deployment0]
                    [AppState].[StatusType],
                    NULL AS [ErrorCode],
                    [AppState].[EnforcementState],
-                   [AppState].[IsMachineChangesPersisted]
+                   [AppState].[IsMachineChangesPersisted],
+                   (N'CH_ClientState'+CAST([cs].[ClientState] AS NCHAR(1))) AS [ClientStateDescription]
                    FROM [fn_rbac_AppDeploymentRNMAssetDetails]([dbo].[fn_LShortNameToLCID](@locale), @UserSIDs)
                    [AppState]
+                        LEFT OUTER JOIN [cm_vit].[dbo].[v_CH_ClientSummary] [cs] ON [AppState].[MachineID] = [cs].
+                        [ResourceID]
                    WHERE([AppState].[PolicyModelID] = @PolicyModelID)
                         AND ([AppState].[AssignmentID] = @AssignmentID)
                         AND ([AppState].[StatusType] = [AppState].[AppStatusType])
@@ -138,9 +144,12 @@ INTO [Deployment0]
                    4 AS [StatusType],
                    NULL AS [ErrorCode],
                    4000 AS [EnforcementState],
-                   [AppState].[IsMachineChangesPersisted]
+                   [AppState].[IsMachineChangesPersisted],
+                   (N'CH_ClientState'+CAST([cs].[ClientState] AS NCHAR(1))) AS [ClientStateDescription]
                    FROM [fn_rbac_CIDeploymentUnknownAssetDetails]([dbo].[fn_LShortNameToLCID](@locale), @UserSIDs)
                    [AppState]
+                        LEFT OUTER JOIN [cm_vit].[dbo].[v_CH_ClientSummary] [cs] ON [AppState].[MachineID] = [cs].
+                        [ResourceID]
                    WHERE([AppState].[PolicyModelID] = @PolicyModelID)
                         AND ([AppState].[AssignmentID] = @AssignmentID)
             UNION ALL
@@ -149,9 +158,12 @@ INTO [Deployment0]
                    [AppState].[StatusType],
                    [AppState].[ErrorCode],
                    [AppState].[EnforcementState],
-                   [AppState].[IsMachineChangesPersisted]
+                   [AppState].[IsMachineChangesPersisted],
+                   (N'CH_ClientState'+CAST([cs].[ClientState] AS NCHAR(1))) AS [ClientStateDescription]
                    FROM [fn_rbac_AppDeploymentErrorAssetDetails]([dbo].[fn_LShortNameToLCID](@locale), @UserSIDs)
                    [AppState]
+                        LEFT OUTER JOIN [cm_vit].[dbo].[v_CH_ClientSummary] [cs] ON [AppState].[MachineID] = [cs].
+                        [ResourceID]
                    WHERE([AppState].[PolicyModelID] = @PolicyModelID)
                         AND ([AppState].[AssignmentID] = @AssignmentID)
                         AND ([AppState].[StatusType] = [AppState].[AppStatusType])
@@ -204,6 +216,10 @@ DROP TABLE [Deployment0];</CommandText>
         <Field Name="IsMachineChangesPersisted">
           <DataField>IsMachineChangesPersisted</DataField>
           <rd:TypeName>System.Boolean</rd:TypeName>
+        </Field>
+        <Field Name="ClientStateDescription">
+          <DataField>ClientStateDescription</DataField>
+          <rd:TypeName>System.String</rd:TypeName>
         </Field>
         <Field Name="Status">
           <DataField>Status</DataField>
@@ -600,6 +616,9 @@ Fields!Status.Value="Requirements_Not_Met","LightBlue")</Color>
                 <TablixColumn>
                   <Width>5.64476cm</Width>
                 </TablixColumn>
+                <TablixColumn>
+                  <Width>4.93417cm</Width>
+                </TablixColumn>
               </TablixColumns>
               <TablixRows>
                 <TablixRow>
@@ -832,6 +851,63 @@ Fields!Status.Value="Requirements_Not_Met","LightBlue")</Color>
                         </Textbox>
                       </CellContents>
                     </TablixCell>
+                    <TablixCell>
+                      <CellContents>
+                        <Textbox Name="Textbox6">
+                          <CanGrow>true</CanGrow>
+                          <KeepTogether>true</KeepTogether>
+                          <Paragraphs>
+                            <Paragraph>
+                              <TextRuns>
+                                <TextRun>
+                                  <Value>Client State</Value>
+                                  <Style>
+                                    <FontSize>11pt</FontSize>
+                                    <FontWeight>Bold</FontWeight>
+                                  </Style>
+                                </TextRun>
+                              </TextRuns>
+                              <Style>
+                                <TextAlign>Left</TextAlign>
+                              </Style>
+                            </Paragraph>
+                          </Paragraphs>
+                          <rd:DefaultName>Textbox6</rd:DefaultName>
+                          <Style>
+                            <Border>
+                              <Style>Solid</Style>
+                              <Width>2.25pt</Width>
+                            </Border>
+                            <TopBorder>
+                              <Color>Black</Color>
+                              <Style>Solid</Style>
+                              <Width>2.25pt</Width>
+                            </TopBorder>
+                            <BottomBorder>
+                              <Color>Black</Color>
+                              <Style>Solid</Style>
+                              <Width>2.25pt</Width>
+                            </BottomBorder>
+                            <LeftBorder>
+                              <Color>Black</Color>
+                              <Style>Solid</Style>
+                              <Width>2.25pt</Width>
+                            </LeftBorder>
+                            <RightBorder>
+                              <Color>Black</Color>
+                              <Style>Solid</Style>
+                              <Width>2.25pt</Width>
+                            </RightBorder>
+                            <BackgroundColor>PaleTurquoise</BackgroundColor>
+                            <VerticalAlign>Middle</VerticalAlign>
+                            <PaddingLeft>2pt</PaddingLeft>
+                            <PaddingRight>2pt</PaddingRight>
+                            <PaddingTop>2pt</PaddingTop>
+                            <PaddingBottom>2pt</PaddingBottom>
+                          </Style>
+                        </Textbox>
+                      </CellContents>
+                    </TablixCell>
                   </TablixCells>
                 </TablixRow>
                 <TablixRow>
@@ -1022,6 +1098,67 @@ Fields!Status.Value="Requirements_Not_Met","LightBlue")</BackgroundColor>
                             </Paragraph>
                           </Paragraphs>
                           <rd:DefaultName>ExtendedInfoDescriptionID</rd:DefaultName>
+                          <Style>
+                            <Border>
+                              <Style>Solid</Style>
+                            </Border>
+                            <TopBorder>
+                              <Color>Black</Color>
+                              <Style>Solid</Style>
+                              <Width>1pt</Width>
+                            </TopBorder>
+                            <BottomBorder>
+                              <Color>Black</Color>
+                              <Style>Solid</Style>
+                              <Width>1pt</Width>
+                            </BottomBorder>
+                            <LeftBorder>
+                              <Color>Black</Color>
+                              <Style>Solid</Style>
+                              <Width>1pt</Width>
+                            </LeftBorder>
+                            <RightBorder>
+                              <Color>Black</Color>
+                              <Style>Solid</Style>
+                              <Width>1pt</Width>
+                            </RightBorder>
+                            <BackgroundColor>=switch(
+Fields!Status.Value="Compliant","LightGreen",
+Fields!Status.Value="In_Progress","Yellow",
+Fields!Status.Value="Error","Tomato",
+Fields!Status.Value="Unknown","LightGrey",
+Fields!Status.Value="Requirements_Not_Met","LightBlue")</BackgroundColor>
+                            <VerticalAlign>Middle</VerticalAlign>
+                            <PaddingLeft>2pt</PaddingLeft>
+                            <PaddingRight>2pt</PaddingRight>
+                            <PaddingTop>2pt</PaddingTop>
+                            <PaddingBottom>2pt</PaddingBottom>
+                          </Style>
+                        </Textbox>
+                      </CellContents>
+                    </TablixCell>
+                    <TablixCell>
+                      <CellContents>
+                        <Textbox Name="ClientState">
+                          <CanGrow>true</CanGrow>
+                          <KeepTogether>true</KeepTogether>
+                          <Paragraphs>
+                            <Paragraph>
+                              <TextRuns>
+                                <TextRun>
+                                  <Value>=SrsResources.Localization.GetString(Fields!ClientStateDescription.Value, User!Language)</Value>
+                                  <Style>
+                                    <FontWeight>Normal</FontWeight>
+                                    <Color>#333333</Color>
+                                  </Style>
+                                </TextRun>
+                              </TextRuns>
+                              <Style>
+                                <TextAlign>Right</TextAlign>
+                              </Style>
+                            </Paragraph>
+                          </Paragraphs>
+                          <rd:DefaultName>ClientState</rd:DefaultName>
                           <Style>
                             <Border>
                               <Style>Solid</Style>
@@ -1290,6 +1427,67 @@ Fields!Status.Value="Requirements_Not_Met","LightBlue")</BackgroundColor>
                         </Textbox>
                       </CellContents>
                     </TablixCell>
+                    <TablixCell>
+                      <CellContents>
+                        <Textbox Name="Textbox11">
+                          <CanGrow>true</CanGrow>
+                          <KeepTogether>true</KeepTogether>
+                          <Paragraphs>
+                            <Paragraph>
+                              <TextRuns>
+                                <TextRun>
+                                  <Value />
+                                  <Style>
+                                    <FontWeight>Normal</FontWeight>
+                                    <Color>#333333</Color>
+                                  </Style>
+                                </TextRun>
+                              </TextRuns>
+                              <Style>
+                                <TextAlign>Left</TextAlign>
+                              </Style>
+                            </Paragraph>
+                          </Paragraphs>
+                          <rd:DefaultName>Textbox11</rd:DefaultName>
+                          <Style>
+                            <Border>
+                              <Style>Solid</Style>
+                            </Border>
+                            <TopBorder>
+                              <Color>Black</Color>
+                              <Style>Solid</Style>
+                              <Width>1pt</Width>
+                            </TopBorder>
+                            <BottomBorder>
+                              <Color>Black</Color>
+                              <Style>Solid</Style>
+                              <Width>1pt</Width>
+                            </BottomBorder>
+                            <LeftBorder>
+                              <Color>Black</Color>
+                              <Style>Solid</Style>
+                              <Width>1pt</Width>
+                            </LeftBorder>
+                            <RightBorder>
+                              <Color>Black</Color>
+                              <Style>Solid</Style>
+                              <Width>1pt</Width>
+                            </RightBorder>
+                            <BackgroundColor>=switch(
+Fields!Status.Value="Compliant","LightGreen",
+Fields!Status.Value="In_Progress","Yellow",
+Fields!Status.Value="Error","Tomato",
+Fields!Status.Value="Unknown","LightGrey",
+Fields!Status.Value="Requirements_Not_Met","LightBlue")</BackgroundColor>
+                            <VerticalAlign>Middle</VerticalAlign>
+                            <PaddingLeft>2pt</PaddingLeft>
+                            <PaddingRight>2pt</PaddingRight>
+                            <PaddingTop>2pt</PaddingTop>
+                            <PaddingBottom>2pt</PaddingBottom>
+                          </Style>
+                        </Textbox>
+                      </CellContents>
+                    </TablixCell>
                   </TablixCells>
                 </TablixRow>
                 <TablixRow>
@@ -1480,6 +1678,67 @@ Fields!Status.Value="Requirements_Not_Met","LightBlue")</BackgroundColor>
                             </Paragraph>
                           </Paragraphs>
                           <rd:DefaultName>Textbox62</rd:DefaultName>
+                          <Style>
+                            <Border>
+                              <Style>Solid</Style>
+                            </Border>
+                            <TopBorder>
+                              <Color>Black</Color>
+                              <Style>Solid</Style>
+                              <Width>1pt</Width>
+                            </TopBorder>
+                            <BottomBorder>
+                              <Color>Black</Color>
+                              <Style>Solid</Style>
+                              <Width>1pt</Width>
+                            </BottomBorder>
+                            <LeftBorder>
+                              <Color>Black</Color>
+                              <Style>Solid</Style>
+                              <Width>1pt</Width>
+                            </LeftBorder>
+                            <RightBorder>
+                              <Color>Black</Color>
+                              <Style>Solid</Style>
+                              <Width>1pt</Width>
+                            </RightBorder>
+                            <BackgroundColor>=switch(
+Fields!Status.Value="Compliant","LightGreen",
+Fields!Status.Value="In_Progress","Yellow",
+Fields!Status.Value="Error","Tomato",
+Fields!Status.Value="Unknown","LightGrey",
+Fields!Status.Value="Requirements_Not_Met","LightBlue")</BackgroundColor>
+                            <VerticalAlign>Middle</VerticalAlign>
+                            <PaddingLeft>2pt</PaddingLeft>
+                            <PaddingRight>2pt</PaddingRight>
+                            <PaddingTop>2pt</PaddingTop>
+                            <PaddingBottom>2pt</PaddingBottom>
+                          </Style>
+                        </Textbox>
+                      </CellContents>
+                    </TablixCell>
+                    <TablixCell>
+                      <CellContents>
+                        <Textbox Name="Textbox12">
+                          <CanGrow>true</CanGrow>
+                          <KeepTogether>true</KeepTogether>
+                          <Paragraphs>
+                            <Paragraph>
+                              <TextRuns>
+                                <TextRun>
+                                  <Value />
+                                  <Style>
+                                    <FontWeight>Normal</FontWeight>
+                                    <Color>#333333</Color>
+                                  </Style>
+                                </TextRun>
+                              </TextRuns>
+                              <Style>
+                                <TextAlign>Left</TextAlign>
+                              </Style>
+                            </Paragraph>
+                          </Paragraphs>
+                          <rd:DefaultName>Textbox12</rd:DefaultName>
                           <Style>
                             <Border>
                               <Style>Solid</Style>
@@ -1752,12 +2011,70 @@ Fields!Status.Value="Requirements_Not_Met","LightBlue")</BackgroundColor>
                         </Textbox>
                       </CellContents>
                     </TablixCell>
+                    <TablixCell>
+                      <CellContents>
+                        <Textbox Name="Textbox13">
+                          <CanGrow>true</CanGrow>
+                          <KeepTogether>true</KeepTogether>
+                          <Paragraphs>
+                            <Paragraph>
+                              <TextRuns>
+                                <TextRun>
+                                  <Value />
+                                  <Style>
+                                    <FontWeight>Bold</FontWeight>
+                                    <Color>#333333</Color>
+                                  </Style>
+                                </TextRun>
+                              </TextRuns>
+                              <Style>
+                                <TextAlign>Left</TextAlign>
+                              </Style>
+                            </Paragraph>
+                          </Paragraphs>
+                          <rd:DefaultName>Textbox13</rd:DefaultName>
+                          <Style>
+                            <Border>
+                              <Style>Solid</Style>
+                              <Width>2.25pt</Width>
+                            </Border>
+                            <TopBorder>
+                              <Color>Black</Color>
+                              <Style>Solid</Style>
+                              <Width>2.25pt</Width>
+                            </TopBorder>
+                            <BottomBorder>
+                              <Color>Black</Color>
+                              <Style>Solid</Style>
+                              <Width>2.25pt</Width>
+                            </BottomBorder>
+                            <LeftBorder>
+                              <Color>Black</Color>
+                              <Style>Solid</Style>
+                              <Width>2.25pt</Width>
+                            </LeftBorder>
+                            <RightBorder>
+                              <Color>Black</Color>
+                              <Style>Solid</Style>
+                              <Width>2.25pt</Width>
+                            </RightBorder>
+                            <BackgroundColor>White</BackgroundColor>
+                            <VerticalAlign>Middle</VerticalAlign>
+                            <PaddingLeft>2pt</PaddingLeft>
+                            <PaddingRight>2pt</PaddingRight>
+                            <PaddingTop>2pt</PaddingTop>
+                            <PaddingBottom>2pt</PaddingBottom>
+                          </Style>
+                        </Textbox>
+                      </CellContents>
+                    </TablixCell>
                   </TablixCells>
                 </TablixRow>
               </TablixRows>
             </TablixBody>
             <TablixColumnHierarchy>
               <TablixMembers>
+                <TablixMember />
                 <TablixMember />
                 <TablixMember />
                 <TablixMember />
@@ -1940,7 +2257,6 @@ Fields!Status.Value="Requirements_Not_Met","LightBlue")</BackgroundColor>
                           <PaddingBottom>2pt</PaddingBottom>
                         </Style>
                       </Textbox>
-                      <rd:Selected>true</rd:Selected>
                     </CellContents>
                   </TablixHeader>
                   <TablixMembers>
@@ -2186,7 +2502,7 @@ Fields!Status.Value="Requirements_Not_Met","LightBlue")</BackgroundColor>
             <Top>4.7625cm</Top>
             <Left>0cm</Left>
             <Height>2.84125cm</Height>
-            <Width>26.14851cm</Width>
+            <Width>31.08268cm</Width>
             <ZIndex>1</ZIndex>
             <Style>
               <Border>
@@ -2218,7 +2534,7 @@ Fields!Status.Value="Requirements_Not_Met","LightBlue")</BackgroundColor>
         <Height>7.60375cm</Height>
         <Style />
       </Body>
-      <Width>32.36182cm</Width>
+      <Width>31.08268cm</Width>
       <Page>
         <PageHeader>
           <Height>1.5cm</Height>
@@ -2293,7 +2609,7 @@ Fields!Status.Value="Requirements_Not_Met","LightBlue")</BackgroundColor>
               <KeepTogether>true</KeepTogether>
               <Top>0.04208in</Top>
               <Height>0.54847in</Height>
-              <Width>10.77237in</Width>
+              <Width>12.23727in</Width>
               <Style>
                 <Border>
                   <Style>None</Style>
@@ -2433,6 +2749,7 @@ Fields!Status.Value="Requirements_Not_Met","LightBlue")</BackgroundColor>
           <Value>=User!Language</Value>
         </Values>
       </DefaultValue>
+      <Prompt>locale</Prompt>
       <Hidden>true</Hidden>
     </ReportParameter>
   </ReportParameters>
