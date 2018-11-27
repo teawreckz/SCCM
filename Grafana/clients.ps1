@@ -84,7 +84,6 @@ try {
 catch {
     return $false
 }
-
 foreach ($row in $result){
     $cv=$row.client_version
     $c=$row.count
@@ -140,7 +139,6 @@ SELECT CASE
                     THEN 'WindowsXP'
                 END,
                 [c].[Value]
- 
 "
 try {
     $result = Invoke-Sqlcmd $sqlCmd -server $SQL_Server -Database $Database
@@ -198,7 +196,6 @@ group by
 		   WHEN [a].[operatingSystem0] LIKE '%2019%'
            THEN '2019'
        END--,[C].[Value]
- 
 "
 try {
     $result = Invoke-Sqlcmd $sqlCmd -server $SQL_Server -Database $Database
@@ -235,7 +232,6 @@ INTO [#tmp_st]
              AND ([p].[PkgID] = [psd].[PackageID])
        GROUP BY [PSd].[ServerNALPath],
                 [PSD].State;
-
 SELECT 
        SUM([d].[Not_Installed]) [PKG_Not_Installed],
        SUM([d].[error]) [PKG_Error],
@@ -255,8 +251,6 @@ SELECT
               WHERE [status] = '3'
        ) [DP_Error]
        FROM [#tmp_st] [d];
-
-
 DROP TABLE [#tmp_st];
 "
 try {
@@ -271,13 +265,11 @@ foreach ($row in $result){
 }
 
 ##distribution
-
 $sqlCmd = "
 DECLARE @StartDate DATE;
 SET @StartDate = DATEADD([d], -7, GETDATE());
 DECLARE @EndDate DATE;
 SET @EndDate = GETDATE();
-
 WITH ClientDownloadHist
      AS (
      SELECT [his].[ID],
