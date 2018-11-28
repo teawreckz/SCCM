@@ -211,7 +211,8 @@ catch {
     return $false
 }
 foreach ($row in $result){
-    $body=$row.OSType+'Versions,OS=_'+$row.OS+',OSVersion=_'+$row.OSVersion+' Count='+$row.count
+    $OS=$row.OS -replace " ","_"
+    $body=$row.OSType+'Versions,OS=_'+$OS+',OSVersion=_'+$row.OSVersion+' Count='+$row.count
     write-host $body
 }
 $sqlCmd = "
