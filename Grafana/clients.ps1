@@ -12,27 +12,27 @@ SELECT
        (
        SELECT @date
        ) AS date,
-       (
+       ISNULL((
        SELECT COUNT(DISTINCT [ResourceID]) AS [cmg_updates_scan]
               FROM [v_updatescanstatus]
               WHERE [LastScanTime] > @date
                     AND 
               [LastScanPackageLocation] LIKE '%cmg%'
               GROUP BY [LastScanPackageLocation]
-       ) AS [cmg_updates_scan],
-       (
+       ),0) AS [cmg_updates_scan],
+       ISNULL((
        SELECT COUNT(DISTINCT [Name]) [cmg_clients]
               FROM [v_CombinedDeviceResources]
               WHERE [CNIsOnInternet] = 1
                     AND [CNIsOnline] = 1
                     AND [CNAccessMP] LIKE '%cmg%'
-       ) AS [cmg_clients],
-       (
+       ),0) AS [cmg_clients],
+       ISNULL((
        SELECT COUNT(DISTINCT [Name]) [MP_Clients]
               FROM [v_CombinedDeviceResources]
               WHERE [CNIsOnInternet] = 0
                     AND [CNIsOnline] = 1
-       ) AS [MP_Clients];
+       ),0) AS [MP_Clients];
 "
 try {
     $result = Invoke-Sqlcmd $sqlCmd  -server $SQL_Server -Database $Database
@@ -84,6 +84,7 @@ try {
 catch {
     return $false
 }
+
 foreach ($row in $result){
     $cv=$row.client_version
     $c=$row.count
@@ -258,6 +259,8 @@ SELECT
               WHERE [status] = '3'
        ) [DP_Error]
        FROM [#tmp_st] [d];
+
+
 DROP TABLE [#tmp_st];
 "
 try {
@@ -337,10 +340,10 @@ WITH ClientDownloadHist
             WHERE [RoleTypeID] = 3
             GROUP BY [bgs].[GroupId])
      SELECT --[bg].[Name] AS [BoundaryGroupName],
-     sum(ISNULL([cdb].[BranchCacheBytes], 0))/1073741824 AS [BranchCache_GB],
-     sum(ISNULL([cdb].[CloudDistributionPointBytes], 0))/1073741824 AS [CloudDP_GB],
-     sum(ISNULL([cdb].[DistributionPointBytes], 0))/1073741824 AS [DP_GB],
-     sum(ISNULL([cdb].[PeerCacheBytes], 0))/1073741824 AS [PeerCache_GB]
+     ISNULL(sum(ISNULL([cdb].[BranchCacheBytes], 0))/1073741824,0) AS [BranchCache_GB],
+     ISNULL(sum(ISNULL([cdb].[CloudDistributionPointBytes], 0))/1073741824,0) AS [CloudDP_GB],
+     ISNULL(sum(ISNULL([cdb].[DistributionPointBytes], 0))/1073741824,0) AS [DP_GB],
+     ISNULL(sum(ISNULL([cdb].[PeerCacheBytes], 0))/1073741824,0) AS [PeerCache_GB]
             FROM [BoundaryGroup] [bg]
                  LEFT JOIN [Peers] AS [p] ON [p].[BoundaryGroup] = [bg].[GroupID]
                  LEFT JOIN [DistPoints] AS [dp] ON [dp].[BoundaryGroup] = [bg].[GroupID]
@@ -355,6 +358,6 @@ catch {
     return $false
 }
 foreach ($row in $result){
-    $body='Content_WKS '+'BranchCache='+$row.BranchCache_GB+',CloudDP='+$row.CloudDP_GB +',DP='+$row.DP_GB+',PeerCache='+$row.PeerCache_GB
+    $body='Content_WKS '+'BranchCache='+$row.BranchCache_GB+',CloudDP='+$row.CloudDP_GB+',DP='+$row.DP_GB+',PeerCache='+$row.PeerCache_GB
     write-host $body
 }
