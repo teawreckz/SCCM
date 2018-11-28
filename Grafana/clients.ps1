@@ -99,46 +99,109 @@ foreach ($row in $result2){
     write-host $body.trim()
 }
 $sqlCmd = "
-SELECT CASE
-           WHEN [a].[operatingSystem0] LIKE '%Windows 10%'
-           THEN 'Windows10'
-           WHEN [a].[operatingSystem0] LIKE '%Windows 7%'
-           THEN 'Windows7'
-           WHEN [a].[operatingSystem0] LIKE '%Windows 8.1%'
-           THEN 'Windows8_1'
-           WHEN [a].[operatingSystem0] LIKE '%Windows 8%'
-           THEN 'Windows8'
-           WHEN [a].[operatingSystem0] LIKE '%Windows Vista%'
-           THEN 'WindowsVista'
-           WHEN [a].[operatingSystem0] LIKE '%Windows xp%'
-           THEN 'WindowsXP'
-       END AS [OS],
-       iif([C].[Value] is null,0,[C].[Value]) AS [Build],
-       COUNT(DISTINCT [A].[Name0]) AS [count]
-       FROM [v_R_System] [A]
-            LEFT OUTER JOIN [vSMS_WindowsServicingStates] [B] ON [B].[Build] = [A].[Build01]
-                                                                 AND (([B].[Branch] = [A].[OSBranch01])
-                                                                      OR ([A].[OSBranch01] = ''
-                                                                          AND [B].[Branch] = 0))
-            LEFT OUTER JOIN [vSMS_WindowsServicingLocalizedNames] [C] ON [B].[Name] = [C].[Name]
-       WHERE [a].[operatingSystem0] IS NOT NULL
-             AND [a].[operatingSystem0] NOT LIKE '%server%'
-             AND [a].[operatingSystem0] LIKE '%windows%'
-       GROUP BY CASE
-                    WHEN [a].[operatingSystem0] LIKE '%Windows 10%'
-                    THEN 'Windows10'
-                    WHEN [a].[operatingSystem0] LIKE '%Windows 7%'
-                    THEN 'Windows7'
-                    WHEN [a].[operatingSystem0] LIKE '%Windows 8.1%'
-                    THEN 'Windows8_1'
-                    WHEN [a].[operatingSystem0] LIKE '%Windows 8%'
-                    THEN 'Windows8'
-                    WHEN [a].[operatingSystem0] LIKE '%Windows Vista%'
-                    THEN 'WindowsVista'
-                    WHEN [a].[operatingSystem0] LIKE '%Windows xp%'
-                    THEN 'WindowsXP'
-                END,
-                [c].[Value]
+WITH CTE
+     AS (
+     SELECT DISTINCT
+            CASE
+                WHEN [Systems].[Operating_System_Name_And0] LIKE '%Workstation 5.%'
+                THEN 'WindowsXP'
+                WHEN [Systems].[Operating_System_Name_And0] LIKE '%Workstation 6.0%'
+                THEN 'WindowsVista'
+                WHEN [Systems].[Operating_System_Name_And0] LIKE '%Workstation 6.1%'
+                THEN 'Windows7'
+                WHEN [Systems].[Operating_System_Name_And0] LIKE 'Windows_7 Entreprise 6.1'
+                THEN 'Windows7'
+                WHEN [Systems].[Operating_System_Name_And0] = 'Windows Embedded Standard 6.1'
+                THEN 'Windows7'
+                WHEN [Systems].[Operating_System_Name_And0] LIKE '%Workstation 6.2%'
+                THEN 'Windows8'
+                WHEN [Systems].[Operating_System_Name_And0] LIKE '%Workstation 6.3%'
+                THEN 'Windows8_1'
+                WHEN [Systems].[Operating_System_Name_And0] LIKE '%Workstation 10%'
+                THEN 'Windows10'
+                WHEN [Systems].[Operating_System_Name_And0] LIKE '%Workstation 10%'
+                THEN 'Windows10'
+                WHEN [Systems].[Operating_System_Name_And0] LIKE '%Server 5.%'
+                THEN 'WindowsServer2003'
+                WHEN [Systems].[Operating_System_Name_And0] LIKE '%Server 6.0%'
+                THEN 'WindowsServer2008'
+                WHEN [Systems].[Operating_System_Name_And0] LIKE '%Server 6.1%'
+                THEN 'WindowsServer2008R2'
+                WHEN [Systems].[Operating_System_Name_And0] LIKE '%Server 6.2%'
+                THEN 'WindowsServer2012'
+                WHEN [Systems].[Operating_System_Name_And0] LIKE '%Server 6.3%'
+                THEN 'WindowsServer2012R2'
+                WHEN [Systems].[Operating_System_Name_And0] LIKE '%Server 10%'
+                THEN(CASE
+                         WHEN CAST(REPLACE([Build01], '.', '') AS INT) > 10017763
+                         THEN 'WindowsServer2019'
+                         ELSE 'WindowsServer2016'
+                     END)
+                ELSE [Systems].[Operating_System_Name_And0]
+            END AS [OS],
+            CASE
+                WHEN [Systems].[Operating_System_Name_And0] LIKE '%Workstation 10%'
+                THEN(CASE REPLACE([Systems].[Build01], '.', '')
+                         WHEN '10010240'
+                         THEN '1507'
+                         WHEN '10010586'
+                         THEN '1511'
+                         WHEN '10014393'
+                         THEN '1607'
+                         WHEN '10015063'
+                         THEN '1703'
+                         WHEN '10016299'
+                         THEN '1709'
+                         WHEN '10017134'
+                         THEN '1803'
+                         WHEN '10017763'
+                         THEN '1809'
+                         ELSE 'N/A'
+                     END)
+                WHEN [Systems].[Operating_System_Name_And0] LIKE '%Server 10%'
+                THEN(CASE REPLACE([Systems].[Build01], '.', '')
+                         WHEN '10014393'
+                         THEN '1607'
+                         WHEN '10016299'
+                         THEN '1709'
+                         WHEN '10017134'
+                         THEN '1803'
+                         WHEN '10017763'
+                         THEN '1809'
+                         ELSE 'N/A'
+                     END)
+                ELSE 'N/A'
+            END AS [OSVersion],
+            COUNT(DISTINCT [Systems].[Name0]) AS [OScount],
+            ISNULL([Systems].[Build01], 0) AS [Build01]
+            FROM [v_R_System] [Systems]
+            WHERE [Systems].[operatingSystem0] IS NOT NULL
+            GROUP BY [Operating_System_Name_And0],
+                     [Build01])
+     SELECT DISTINCT
+            [OS],
+            [OSVersion],
+            [OSType] = (CASE
+                            WHEN [OS] LIKE 'WindowsServer%'
+                            THEN 'Servers'
+                            WHEN [OS] LIKE 'Windows%'
+                            THEN 'Workstations'
+                            ELSE 'Unknowns'
+                        END),
+            Count =
+            (
+            SELECT SUM([OSCount])
+                   FROM [CTE] AS [Summary]
+                   WHERE [Summary].[OS] = [CTE].[OS]
+                         AND [Summary].[OSVersion] = [CTE].[OSVersion]
+            )
+            FROM [CTE]
+            GROUP BY [OS],
+                     [OSVersion],
+                     [Build01]
+     ORDER BY [OS],
+              [OSVersion],
+              Count;
 "
 try {
     $result = Invoke-Sqlcmd $sqlCmd -server $SQL_Server -Database $Database
@@ -147,64 +210,7 @@ catch {
     return $false
 }
 foreach ($row in $result){
-    $body=$row.OS+',Build=_'+$row.build+' Count='+$row.count
-    write-host $body
-}
-$sqlCmd = "
-SELECT distinct
---[a].[operatingSystem0],
- CASE
-           WHEN [a].[operatingSystem0] LIKE '%2008 R2%'
-           THEN '2008R2'
-           WHEN [a].[operatingSystem0] LIKE '%2008%'
-           THEN '2008'
-           WHEN [a].[operatingSystem0] LIKE '%2003%'
-           THEN '2003'
-           WHEN [a].[operatingSystem0] LIKE '%2012 R2%'
-           THEN '2012_R2'
-           WHEN [a].[operatingSystem0] LIKE '%2012%'
-           THEN '2012'
-           WHEN [a].[operatingSystem0] LIKE '%2016%'
-           THEN '2016'
-		   WHEN [a].[operatingSystem0] LIKE '%2019%'
-           THEN '2019'
-       END AS [OS],
-       --iif([C].[Value] is null,0,[C].[Value]) AS [Build],
-       COUNT(DISTINCT [A].[Name0]) AS [count]
-       FROM [v_R_System] [A]
-            LEFT OUTER JOIN [vSMS_WindowsServicingStates] [B] ON [B].[Build] = [A].[Build01]
-                                                                 AND (([B].[Branch] = [A].[OSBranch01])
-                                                                      OR ([A].[OSBranch01] = ''
-                                                                          AND [B].[Branch] = 0))
-            LEFT OUTER JOIN [vSMS_WindowsServicingLocalizedNames] [C] ON [B].[Name] = [C].[Name]
-       WHERE [a].[operatingSystem0] IS NOT NULL
-             AND [a].[operatingSystem0] LIKE '%server %'
-group by
- CASE
-           WHEN [a].[operatingSystem0] LIKE '%2008 R2%'
-           THEN '2008R2'
-           WHEN [a].[operatingSystem0] LIKE '%2008%'
-           THEN '2008'
-           WHEN [a].[operatingSystem0] LIKE '%2003%'
-           THEN '2003'
-           WHEN [a].[operatingSystem0] LIKE '%2012 R2%'
-           THEN '2012_R2'
-           WHEN [a].[operatingSystem0] LIKE '%2012%'
-           THEN '2012'
-           WHEN [a].[operatingSystem0] LIKE '%2016%'
-           THEN '2016'
-		   WHEN [a].[operatingSystem0] LIKE '%2019%'
-           THEN '2019'
-       END--,[C].[Value]
-"
-try {
-    $result = Invoke-Sqlcmd $sqlCmd -server $SQL_Server -Database $Database
-}
-catch {
-    return $false
-}
-foreach ($row in $result){
-    $body='Servers,Server=_'+$row.OS+' Count='+$row.count
+    $body=$row.OSType+'Versions,OS=_'+$row.OS+',OSVersion=_'+$row.OSVersion+' Count='+$row.count
     write-host $body
 }
 $sqlCmd = "
@@ -232,6 +238,7 @@ INTO [#tmp_st]
              AND ([p].[PkgID] = [psd].[PackageID])
        GROUP BY [PSd].[ServerNALPath],
                 [PSD].State;
+
 SELECT 
        SUM([d].[Not_Installed]) [PKG_Not_Installed],
        SUM([d].[error]) [PKG_Error],
@@ -265,11 +272,13 @@ foreach ($row in $result){
 }
 
 ##distribution
+
 $sqlCmd = "
 DECLARE @StartDate DATE;
 SET @StartDate = DATEADD([d], -7, GETDATE());
 DECLARE @EndDate DATE;
 SET @EndDate = GETDATE();
+
 WITH ClientDownloadHist
      AS (
      SELECT [his].[ID],
