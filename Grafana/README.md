@@ -1,4 +1,5 @@
 Setting Up the Stack:
-https://sccm-zone.com/grafana-sccm-dashboard-part-1-d0af56e94cab
+https://SCCM.Zone/grafana-dashboards-1
 
 Config for SCCM - Clients Dahboard
+https://SCCM.Zone/grafana-dashboards-2
